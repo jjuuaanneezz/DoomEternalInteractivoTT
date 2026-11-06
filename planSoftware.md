@@ -1,3 +1,7 @@
 # plan detallado para Doom interactivo para tiktok
 
-se va a crear un software para enlazar doom eternal con tiktok live studio, el plan es hacer lives interactivos de doom eternal en el qu cada donacion dependiendo de monto de esta haga aparecer un demonio del juego mas o menos fuerte, como ejemplo de esto estan los lives de minecraft en tiktok como la modalidad bedrock box que el streamer tiene que llena una caja de bloque y los espectadores o donadores donas monedas de tiktok para hacerle mas complicado llenar la caja para el streamer, algo parecido quiero hacer con doom eternal, me gustaria estar en una arena y que mis espectadores puedan donar para hacer aparecer demonios que me hagan mas dificil la partida. 
+se va a crear un software para enlazar doom eternal con tiktok live studio, el plan es hacer lives interactivos de doom eternal en el qu cada donacion dependiendo de monto de esta haga aparecer un demonio del juego mas o menos fuerte, como ejemplo de esto estan los lives de minecraft en tiktok como la modalidad bedrock box que el streamer tiene que llena una caja de bloque y los espectadores o donadores donas monedas de tiktok para hacerle mas complicado llenar la caja para el streamer, algo parecido quiero hacer con doom eternal, me gustaria estar en una arena y que mis espectadores puedan donar para hacer aparecer demonios que me hagan mas dificil la partida.
+
+tarea
+
+promtear con opencode que genera la primera fase del PLAN que viene siendo el software. Usar la skill de fing.skills para que opencode busque habilidades para programar mejor en python.
