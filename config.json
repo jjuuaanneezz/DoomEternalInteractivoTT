@@ -1,7 +1,7 @@
 {
   "usuario_tiktok": "_nnezz_",
-  "max_spawns_por_minuto": 20,
-  "delay_entre_spawns_segundos": 2.0,
+  "max_spawns_por_minuto": 40,
+  "delay_entre_spawns_segundos": 0.6,
   "tecla_consola": "`",
   "comando_panico": "mh_killAi",
   "rangos_donaciones": [
