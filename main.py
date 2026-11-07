@@ -11,8 +11,18 @@ from src.core.queue_worker import QueueWorker
 from src.adapters.tiktok_client import TikTokReceiver
 from src.models import SpawnTask, ActionType
 
-# Virtual Key de Windows para F12
+# Virtual Key de Windows para F12 (Pánico)
 VK_F12 = 0x7B
+
+
+def print_bind_reminder():
+    print("\n" + "-"*65)
+    print(" [SISTEMA SILENCIOSO ACTIVO]: No abre la consola ni interrumpe WASD.")
+    print(" Usa la tecla [F5] vinculada a 'exec live_cmd.cfg'.")
+    print(" (Si ya tenias el juego abierto, escribe 1 sola vez en consola:")
+    print('  bind F5 "exec live_cmd.cfg"')
+    print(" En proximas partidas se cargara automaticamente via autoexec.cfg)")
+    print("-"*65)
 
 
 def listen_global_panic_hotkey(worker: QueueWorker, stop_event: threading.Event):
@@ -22,7 +32,6 @@ def listen_global_panic_hotkey(worker: QueueWorker, stop_event: threading.Event)
     """
     user32 = ctypes.windll.user32
     while not stop_event.is_set():
-        # GetAsyncKeyState verifica el estado físico de la tecla
         if user32.GetAsyncKeyState(VK_F12) & 0x8000:
             print("\n[HOTKEY F12 DETECTADA] ¡Activando Boton de Panico!")
             worker.enqueue(
@@ -33,20 +42,20 @@ def listen_global_panic_hotkey(worker: QueueWorker, stop_event: threading.Event)
                     description="Limpieza de emergencia"
                 )
             )
-            # Evitar rebotes de tecla
             time.sleep(1.0)
         time.sleep(0.05)
 
 
 def run_test_mode(coins: int, config: ConfigLoader, injector: DoomInjector):
     cmd, categoria = config.get_demon_for_coins(coins)
-    print("\n" + "="*60)
+    print("\n" + "="*65)
     print(f" MODO DE PRUEBA: Donacion simulada de {coins} monedas")
     print(f" Categoria: {categoria}")
-    print(f" Comando a ejecutar: {cmd}")
-    print("="*60)
+    print(f" Comando asignado: {cmd}")
+    print("="*65)
+    print_bind_reminder()
 
-    print("\nPreparate... cambiando a Doom Eternal en:")
+    print("\nPreparate... enviando a Doom Eternal en:")
     for i in range(3, 0, -1):
         print(f" {i}...")
         time.sleep(1.0)
@@ -54,20 +63,20 @@ def run_test_mode(coins: int, config: ConfigLoader, injector: DoomInjector):
     hwnd = injector.find_doom_window()
     if not hwnd:
         print("\n[AVISO] No se detecto la ventana de Doom Eternal abierta.")
-        print("[AVISO] Asegurate de tener el juego abierto y en la arena.")
-        print("Intentando inyectar comando de todos modos...\n")
+        print("Asegurate de tener el juego abierto y en la arena.")
+        print("Disparando comando de todos modos...\n")
     else:
-        print(f"\n[OK] Ventana de Doom Eternal detectada (HWND: {hwnd}). Enfocando...")
+        print(f"\n[OK] Ventana de Doom Eternal detectada (HWND: {hwnd}).")
 
     success = injector.execute_command(cmd)
     if success:
-        print(f"[EXITO] Comando '{cmd}' enviado a la consola del juego.")
+        print(f"[EXITO] Inyectado '{cmd}' mediante live_cmd.cfg + pulsacion F5 (sin consola).")
     else:
-        print("[ERROR] No se pudo enviar el comando.")
+        print("[ERROR] No se pudo inyectar el comando.")
 
 
 def run_panic_mode(injector: DoomInjector):
-    print("\n[BOTON DE PANICO] Enviando mh_killAi a Doom Eternal...")
+    print("\n[BOTON DE PANICO] Enviando mh_killAi a Doom Eternal mediante F5...")
     injector.panic_kill_all()
     print("[EXITO] Comando de pánico enviado.")
 
@@ -79,8 +88,10 @@ def run_live_mode(username: str, config: ConfigLoader, injector: DoomInjector, w
     print(f" Streamer: @{username}")
     print(f" Limite de seguridad: {config.max_spawns_por_minuto} spawns/minuto")
     print(f" Delay minimo entre spawns: {config.delay_entre_spawns_segundos}s")
+    print(" Inyeccion: Silenciosa en segundo plano (F5 -> live_cmd.cfg)")
     print(" Tecla de panico de emergencia en el teclado: [F12]")
     print("="*65)
+    print_bind_reminder()
 
     # Iniciar worker
     worker.start()
@@ -112,7 +123,6 @@ def main():
     parser.add_argument("--streamer", type=str, help="Nombre de usuario de TikTok para conectar en vivo")
     args = parser.parse_args()
 
-    # Cargar configuracion y adaptadores
     try:
         config = ConfigLoader("config.json")
     except Exception as e:

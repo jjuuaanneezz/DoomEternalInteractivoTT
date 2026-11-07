@@ -58,3 +58,4 @@ class ConfigLoader:
             return f"chrispy {chosen_demon}", tier.category
 
         return "chrispy ai/fodder/imp", "Fodder por defecto"
+

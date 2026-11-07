@@ -38,3 +38,4 @@ class DemonTier:
     max_coins: int
     category: str
     demons: List[str]
+

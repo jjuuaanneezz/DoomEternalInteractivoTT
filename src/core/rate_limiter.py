@@ -54,3 +54,4 @@ class RateLimiter:
             "max_por_minuto": self.max_per_minute,
             "cupos_disponibles": max(0, self.max_per_minute - len(self.history))
         }
+

@@ -63,3 +63,4 @@ class QueueWorker:
                 print(f"[ERROR] Error al inyectar comando '{task.command}': {e}")
             finally:
                 self.task_queue.task_done()
+

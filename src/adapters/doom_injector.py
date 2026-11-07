@@ -1,7 +1,8 @@
 import ctypes
 from ctypes import wintypes
+import os
 import time
-from typing import Optional
+from typing import List, Optional
 
 # Definición de estructuras de Windows API para SendInput
 PUL = ctypes.POINTER(ctypes.c_ulong)
@@ -52,26 +53,34 @@ class Input(ctypes.Structure):
 
 
 INPUT_KEYBOARD = 1
-KEYEVENTF_EXTENDEDKEY = 0x0001
 KEYEVENTF_KEYUP = 0x0002
-KEYEVENTF_UNICODE = 0x0004
 KEYEVENTF_SCANCODE = 0x0008
 
-# Scancodes de hardware estándar (DirectX / idTech)
-SCANCODE_TILDE = 0x29      # Tecla ` o ~ (debajo de Escape)
-SCANCODE_RETURN = 0x1C     # Tecla Enter
-SCANCODE_ESCAPE = 0x01     # Tecla Esc
+# Tecla F5
+VK_F5 = 0x74
+SCANCODE_F5 = 0x3F
 
 
 class DoomInjector:
-    def __init__(self, console_key_scancode: int = SCANCODE_TILDE):
+    def __init__(self, trigger_key_vk: int = VK_F5, trigger_key_scancode: int = SCANCODE_F5):
         self.user32 = ctypes.windll.user32
-        self.console_key = console_key_scancode
+        self.trigger_vk = trigger_key_vk
+        self.trigger_scancode = trigger_key_scancode
         self.last_found_hwnd: Optional[int] = None
+
+        # Rutas hacia el archivo live_cmd.cfg donde Doom ejecuta los comandos
+        user_saved_games = os.path.expanduser("~\\Saved Games\\id Software\\DOOMEternal\\base")
+        game_base = r"D:\SteamLibrary\steamapps\common\DOOMEternal\base"
+
+        self.cfg_destinations: List[str] = [
+            os.path.join(game_base, "live_cmd.cfg")
+        ]
+        if os.path.exists(user_saved_games):
+            self.cfg_destinations.append(os.path.join(user_saved_games, "live_cmd.cfg"))
 
     def find_doom_window(self) -> Optional[int]:
         """
-        Busca la ventana de Doom Eternal por título o clase.
+        Busca la ventana de Doom Eternal por título.
         """
         doom_hwnds = []
 
@@ -93,7 +102,6 @@ class DoomInjector:
             self.last_found_hwnd = doom_hwnds[0]
             return doom_hwnds[0]
 
-        # Intento de búsqueda directa
         direct_hwnd = self.user32.FindWindowW(None, "DOOMEternal")
         if direct_hwnd:
             self.last_found_hwnd = direct_hwnd
@@ -103,17 +111,15 @@ class DoomInjector:
 
     def focus_window(self, hwnd: Optional[int] = None) -> bool:
         """
-        Trae la ventana de Doom al frente.
+        Garantiza que Doom Eternal tenga el foco de entrada sin interrumpir el juego.
         """
         target_hwnd = hwnd or self.last_found_hwnd or self.find_doom_window()
         if not target_hwnd:
             return False
 
-        # Si está minimizada, restaurar
         if self.user32.IsIconic(target_hwnd):
             self.user32.ShowWindow(target_hwnd, 9)  # SW_RESTORE
 
-        # Adjuntar hilo de entrada para garantizar el foco en Windows
         current_thread_id = ctypes.windll.kernel32.GetCurrentThreadId()
         window_thread_id = self.user32.GetWindowThreadProcessId(target_hwnd, None)
 
@@ -122,76 +128,69 @@ class DoomInjector:
         self.user32.SetFocus(target_hwnd)
         self.user32.AttachThreadInput(current_thread_id, window_thread_id, False)
 
-        time.sleep(0.05)
         return True
 
-    def _send_key(self, scancode: int, is_up: bool = False):
-        flags = KEYEVENTF_SCANCODE
-        if is_up:
-            flags |= KEYEVENTF_KEYUP
+    def _write_cmd_file(self, command: str) -> None:
+        """
+        Escribe el comando en live_cmd.cfg para que Doom lo ejecute con 'exec'.
+        """
+        for path in self.cfg_destinations:
+            try:
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                with open(path, "w", encoding="utf-8") as f:
+                    f.write(f"{command}\n")
+            except Exception as e:
+                print(f"[AVISO] No se pudo escribir en {path}: {e}")
 
+    def _press_trigger_key(self, hold_seconds: float = 0.02):
+        """
+        Envía una pulsación instantánea de F5 con scancode de hardware + VK.
+        """
         extra = ctypes.c_ulong(0)
-        ii_ = InputI()
-        ii_.ki = KeyBdInput(0, scancode, flags, 0, ctypes.pointer(extra))
-        x = Input(ctypes.c_ulong(INPUT_KEYBOARD), ii_)
-        self.user32.SendInput(1, ctypes.pointer(x), ctypes.sizeof(x))
 
-    def press_and_release(self, scancode: int, hold_seconds: float = 0.02):
-        self._send_key(scancode, is_up=False)
-        time.sleep(hold_seconds)
-        self._send_key(scancode, is_up=True)
-        time.sleep(hold_seconds)
-
-    def type_char_unicode(self, ch: str, hold_seconds: float = 0.01):
-        extra = ctypes.c_ulong(0)
-        code = ord(ch)
-
-        # Key down
+        # 1. Key Down (F5)
         ii_down = InputI()
-        ii_down.ki = KeyBdInput(0, code, KEYEVENTF_UNICODE, 0, ctypes.pointer(extra))
+        ii_down.ki = KeyBdInput(
+            self.trigger_vk,
+            self.trigger_scancode,
+            KEYEVENTF_SCANCODE,
+            0,
+            ctypes.pointer(extra)
+        )
         x_down = Input(ctypes.c_ulong(INPUT_KEYBOARD), ii_down)
         self.user32.SendInput(1, ctypes.pointer(x_down), ctypes.sizeof(x_down))
 
         time.sleep(hold_seconds)
 
-        # Key up
+        # 2. Key Up (F5)
         ii_up = InputI()
-        ii_up.ki = KeyBdInput(0, code, KEYEVENTF_UNICODE | KEYEVENTF_KEYUP, 0, ctypes.pointer(extra))
+        ii_up.ki = KeyBdInput(
+            self.trigger_vk,
+            self.trigger_scancode,
+            KEYEVENTF_SCANCODE | KEYEVENTF_KEYUP,
+            0,
+            ctypes.pointer(extra)
+        )
         x_up = Input(ctypes.c_ulong(INPUT_KEYBOARD), ii_up)
         self.user32.SendInput(1, ctypes.pointer(x_up), ctypes.sizeof(x_up))
 
-        time.sleep(hold_seconds)
-
-    def type_string(self, text: str):
-        for ch in text:
-            self.type_char_unicode(ch)
-
     def execute_command(self, command: str, focus_first: bool = True) -> bool:
         """
-        Abre la consola de Doom, escribe el comando, pulsa Enter y cierra la consola.
+        Escribe el comando en live_cmd.cfg y pulsa F5.
+        La consola NUNCA se abre y no interfiere con WASD ni con el movimiento.
         """
         if focus_first:
             self.focus_window()
 
-        # 1. Abrir consola
-        self.press_and_release(self.console_key, hold_seconds=0.03)
-        time.sleep(0.04)
+        # Escribir el comando dinámicamente
+        self._write_cmd_file(command)
 
-        # 2. Escribir comando
-        self.type_string(command)
-        time.sleep(0.03)
-
-        # 3. Presionar Enter
-        self.press_and_release(SCANCODE_RETURN, hold_seconds=0.03)
-        time.sleep(0.04)
-
-        # 4. Cerrar consola
-        self.press_and_release(self.console_key, hold_seconds=0.03)
-        time.sleep(0.02)
+        # Disparar la tecla vinculada en Doom (F5)
+        self._press_trigger_key(hold_seconds=0.02)
         return True
 
     def panic_kill_all(self, focus_first: bool = True) -> bool:
         """
-        Ejecuta el botón de pánico en Doom para eliminar a todos los demonios vivos.
+        Ejecuta de inmediato mh_killAi mediante live_cmd.cfg + F5.
         """
         return self.execute_command("mh_killAi", focus_first=focus_first)
