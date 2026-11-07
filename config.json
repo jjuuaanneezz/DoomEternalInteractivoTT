@@ -1,0 +1,81 @@
+{
+  "usuario_tiktok": "nombre_de_usuario_tiktok",
+  "max_spawns_por_minuto": 20,
+  "delay_entre_spawns_segundos": 2.0,
+  "tecla_consola": "`",
+  "comando_panico": "mh_killAi",
+  "rangos_donaciones": [
+    {
+      "min_monedas": 1,
+      "max_monedas": 29,
+      "categoria": "Fodder (Tropas ligeras)",
+      "demonios": [
+        "ai/fodder/imp",
+        "ai/fodder/zombie_tier_1",
+        "ai/fodder/former_soldier"
+      ]
+    },
+    {
+      "min_monedas": 30,
+      "max_monedas": 99,
+      "categoria": "Heavy Medio (Amenaza media)",
+      "demonios": [
+        "ai/heavy/cacodemon",
+        "ai/heavy/hellknight",
+        "ai/heavy/prowler"
+      ]
+    },
+    {
+      "min_monedas": 100,
+      "max_monedas": 299,
+      "categoria": "Heavy Fuerte (Gran amenaza)",
+      "demonios": [
+        "ai/heavy/mancubus",
+        "ai/heavy/arachnotron",
+        "ai/heavy/painelemental"
+      ]
+    },
+    {
+      "min_monedas": 300,
+      "max_monedas": 999999,
+      "categoria": "Super Heavy (Pesadilla / Jefe)",
+      "demonios": [
+        "ai/superheavy/baron",
+        "ai/superheavy/tyrant",
+        "ai/superheavy/marauder",
+        "ai/superheavy/doomhunter"
+      ]
+    }
+  ],
+  "comandos_especiales": {
+    "ayudas": [
+      {
+        "monedas": 50,
+        "comando": "give ammo",
+        "descripcion": "Recarga 100% munición del Slayer"
+      },
+      {
+        "monedas": 150,
+        "comando": "give health; give armor",
+        "descripcion": "Restaura Vida y Armadura completa"
+      },
+      {
+        "monedas": 500,
+        "comando": "give extra_life",
+        "descripcion": "Otorga 1 Vida Extra"
+      }
+    ],
+    "sabotajes": [
+      {
+        "monedas": 75,
+        "comando": "chrispy prop/hazard/barrel_explosive",
+        "descripcion": "Barril explosivo cerca del Slayer"
+      },
+      {
+        "monedas": 250,
+        "comando": "chrispy ai/buff_pod",
+        "descripcion": "Totem Buff (Demonios en modo Berserk)"
+      }
+    ]
+  }
+}
