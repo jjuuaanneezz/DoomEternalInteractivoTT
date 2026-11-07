@@ -75,6 +75,57 @@ def run_test_mode(coins: int, config: ConfigLoader, injector: DoomInjector):
         print("[ERROR] No se pudo inyectar el comando.")
 
 
+def run_test_burst_mode(count: int, config: ConfigLoader, injector: DoomInjector, worker: QueueWorker):
+    print("\n" + "="*65)
+    print(f" MODO DE PRUEBA: RAFAGA DE {count} DONACIONES CONSECUTIVAS")
+    print(f" Delay configurado: {config.delay_entre_spawns_segundos}s entre cada spawn")
+    print(f" Maximo por minuto: {config.max_spawns_por_minuto}")
+    print("="*65)
+    print_bind_reminder()
+
+    # Muestras variadas de donaciones simuladas
+    muestras = [
+        (5, "chrispy ai/fodder/imp", "Fodder: Imp", "Viewer_Fan1"),
+        (10, "chrispy ai/fodder/former_soldier", "Fodder: Soldado", "Viewer_Gamer"),
+        (50, "give ammo", "AYUDA: Municion 100%", "Viewer_Salvador"),
+        (80, "chrispy ai/heavy/cacodemon", "Heavy: Cacodemon", "Viewer_Troll"),
+        (150, "chrispy ai/heavy/mancubus", "Heavy: Mancubus", "Viewer_Pro"),
+        (350, "chrispy ai/superheavy/marauder", "SUPER HEAVY: Marauder", "Viewer_Boss"),
+    ]
+
+    print(f"\nGenerando {count} donaciones en cola...")
+    for i in range(count):
+        coins, cmd, desc, donor = muestras[i % len(muestras)]
+        worker.enqueue(
+            SpawnTask(
+                action_type=ActionType.SPAWN if "chrispy" in cmd else ActionType.COMMAND,
+                command=cmd,
+                donor=f"@{donor}",
+                description=f"{desc} ({coins} monedas)"
+            )
+        )
+
+    print(f"[COLA LISTA] {worker.get_pending_count()} tareas encoladas.")
+    print("\nIniciando inyeccion en Doom Eternal en:")
+    for i in range(3, 0, -1):
+        print(f" {i}...")
+        time.sleep(1.0)
+
+    # Iniciar worker
+    worker.start()
+
+    # Monitorear hasta que la cola termine
+    while worker.get_pending_count() > 0 or not worker.task_queue.empty():
+        time.sleep(0.5)
+
+    # Esperar a que la última tarea complete su ciclo
+    time.sleep(config.delay_entre_spawns_segundos)
+    worker.stop()
+    print("\n" + "="*65)
+    print(" [COMPLETADO] Toda la rafaga fue inyectada con exito sin saturar el juego.")
+    print("="*65 + "\n")
+
+
 def run_panic_mode(injector: DoomInjector):
     print("\n[BOTON DE PANICO] Enviando mh_killAi a Doom Eternal mediante F5...")
     injector.panic_kill_all()
@@ -119,6 +170,7 @@ def run_live_mode(username: str, config: ConfigLoader, injector: DoomInjector, w
 def main():
     parser = argparse.ArgumentParser(description="Doom Eternal Interactivo para TikTok LIVE")
     parser.add_argument("--test", type=int, help="Simula una donacion con el monto de monedas indicado (ej. --test 100)")
+    parser.add_argument("--test-burst", type=int, help="Simula una rafaga de N donaciones en cola (ej. --test-burst 5)")
     parser.add_argument("--panic", action="store_true", help="Ejecuta de inmediato el comando de pánico (mh_killAi)")
     parser.add_argument("--streamer", type=str, help="Nombre de usuario de TikTok para conectar en vivo")
     args = parser.parse_args()
@@ -144,13 +196,18 @@ def main():
         run_test_mode(args.test, config, injector)
         return
 
+    if args.test_burst is not None:
+        run_test_burst_mode(args.test_burst, config, injector, worker)
+        return
+
     streamer_user = args.streamer or config.usuario_tiktok
     if streamer_user and streamer_user != "nombre_de_usuario_tiktok":
         run_live_mode(streamer_user, config, injector, worker)
     else:
         print("\n[AVISO] No se proporciono un usuario de TikTok.")
         print("Uso:")
-        print("  python main.py --test <monedas>       (Modo de prueba local)")
+        print("  python main.py --test <monedas>       (Modo de prueba local individual)")
+        print("  python main.py --test-burst <cant>    (Modo de prueba rafaga en cola)")
         print("  python main.py --streamer <usuario>   (Modo LIVE en tiempo real)")
         print("  python main.py --panic                (Boton de panico)")
         print("\nTambien puedes editar 'usuario_tiktok' dentro de config.json.\n")
