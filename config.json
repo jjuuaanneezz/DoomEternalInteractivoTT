@@ -12,7 +12,10 @@
       "demonios": [
         "ai/fodder/imp",
         "ai/fodder/zombie_tier_1",
-        "ai/fodder/former_soldier"
+        "ai/fodder/gargoyle",
+        "ai/fodder/soldier_blaster",
+        "ai/fodder/soldier_shield",
+        "ai/fodder/prowler"
       ]
     },
     {
@@ -22,7 +25,9 @@
       "demonios": [
         "ai/heavy/cacodemon",
         "ai/heavy/hellknight",
-        "ai/heavy/prowler"
+        "ai/heavy/revenant",
+        "ai/heavy/whiplash",
+        "ai/fodder/carcass"
       ]
     },
     {
@@ -30,8 +35,10 @@
       "max_monedas": 299,
       "categoria": "Heavy Fuerte (Gran amenaza)",
       "demonios": [
-        "ai/heavy/mancubus",
+        "ai/heavy/mancubus_fire",
+        "ai/heavy/mancubus_goo",
         "ai/heavy/arachnotron",
+        "ai/heavy/dreadknight",
         "ai/heavy/painelemental"
       ]
     },
@@ -43,7 +50,8 @@
         "ai/superheavy/baron",
         "ai/superheavy/tyrant",
         "ai/superheavy/marauder",
-        "ai/superheavy/doomhunter"
+        "ai/superheavy/doom_hunter",
+        "ai/superheavy/archvile"
       ]
     }
   ],

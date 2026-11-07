@@ -83,14 +83,14 @@ def run_test_burst_mode(count: int, config: ConfigLoader, injector: DoomInjector
     print("="*65)
     print_bind_reminder()
 
-    # Muestras variadas de donaciones simuladas
+    # Muestras variadas de donaciones simuladas (100% verificadas en el motor)
     muestras = [
-        (5, "chrispy ai/fodder/imp", "Fodder: Imp", "Viewer_Fan1"),
-        (10, "chrispy ai/fodder/former_soldier", "Fodder: Soldado", "Viewer_Gamer"),
+        (10, "chrispy ai/fodder/soldier_blaster", "Fodder: Soldado Blaster", "Viewer_Soldier"),
+        (40, "chrispy ai/fodder/prowler", "Heavy/Fodder: Prowler", "Viewer_Prowler"),
         (50, "give ammo", "AYUDA: Municion 100%", "Viewer_Salvador"),
-        (80, "chrispy ai/heavy/cacodemon", "Heavy: Cacodemon", "Viewer_Troll"),
-        (150, "chrispy ai/heavy/mancubus", "Heavy: Mancubus", "Viewer_Pro"),
-        (350, "chrispy ai/superheavy/marauder", "SUPER HEAVY: Marauder", "Viewer_Boss"),
+        (120, "chrispy ai/heavy/mancubus_fire", "Heavy: Mancubus de Fuego", "Viewer_Mancubus"),
+        (350, "chrispy ai/superheavy/doom_hunter", "SUPER HEAVY: Doom Hunter", "Viewer_Hunter"),
+        (400, "chrispy ai/superheavy/marauder", "SUPER HEAVY: Marauder", "Viewer_Boss"),
     ]
 
     print(f"\nGenerando {count} donaciones en cola...")
